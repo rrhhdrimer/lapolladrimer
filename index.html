@@ -876,7 +876,7 @@ function ptsBadge(pron, res, fase){
   return `<div class="pts-badge pts-zero">+0 pts</div>`;
 }
 
-function isLocked(fecha,hora){return new Date()>=new Date(`${fecha}T${hora}:00-05:00`)-30*60*1000;}
+function isLocked(fecha,hora){return new Date()>=(new Date(`${fecha}T${hora}:00-05:00`).getTime()-30*60*1000);}
 function fmt(f){const[,m,d]=f.split("-");return `${parseInt(d)} ${["","Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"][parseInt(m)]}`;}
 function fmtFullDate(f){
   const dias=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
