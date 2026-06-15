@@ -124,7 +124,7 @@
   .save-match-btn:hover:not(:disabled){background:#e6b830;}
   .save-match-btn:disabled{background:#e0e8f0;color:#9ab0c4;cursor:not-allowed;border:1.5px dashed #9ab0c4;}
   .match-result-info{margin-top:12px;font-size:18px;color:#051C2C;text-align:center;padding:10px;background:rgba(5,28,44,0.08);border-radius:8px;}
-  .pts-exact{color:var(--gold-dark);font-weight:700;}
+  .pts-exact{color:var(--green-light);font-weight:700;}
   .pts-correct{color:var(--green-light);font-weight:700;}
   .locked-overlay{font-size:17px;color:#1a3a4f;text-align:center;margin-top:10px;}
 
@@ -712,6 +712,7 @@ function apiLocal(action,body){
   if(action==="buscarUsuario")return{ok:false,error:"⚠️ Sin conexión al servidor."};
   if(action==="eliminarUsuario")return{ok:false,error:"⚠️ Sin conexión al servidor."};
   if(action==="recalcularLeaderboard")return{ok:false,error:"⚠️ Sin conexión al servidor."};
+  if(action==="renombrarUsuario")return{ok:false,error:"⚠️ Sin conexión al servidor."};
   return{ok:false,error:"⚠️ Sin conexión al servidor. Verifica tu internet e intenta de nuevo."};
 }
 
@@ -1191,6 +1192,18 @@ async function renderAdmin(){
     <div id="recalc-msg" style="font-size:13px;margin-top:10px;"></div>
   </div>`;
 
+  // Rename user section
+  html+=`<div class="admin-card"><div class="admin-title">✏️ Corregir Nombre de Usuario</div>
+    <div style="font-size:14px;color:#1a3a4f;margin-bottom:16px;">Corrige el nombre escrito incorrectamente. Se actualiza en todas las hojas (pronósticos, especiales, leaderboard) automáticamente.</div>
+    <div class="admin-row">
+      <input id="rename-old" class="admin-score-input" style="width:220px;font-size:14px" type="text" placeholder="Nombre actual (mal escrito)">
+      <span class="admin-score-sep">→</span>
+      <input id="rename-new" class="admin-score-input" style="width:220px;font-size:14px" type="text" placeholder="Nombre correcto">
+      <button class="admin-save-btn" id="rename-btn" onclick="doRenameUser(this)">Corregir</button>
+    </div>
+    <div id="rename-msg" style="font-size:13px;margin-top:10px;"></div>
+  </div>`;
+
   html+=`<div class="admin-card"><div class="admin-title">🔓 Control de Fases</div><div style="font-size:14px;color:#1a3a4f;margin-bottom:16px;">Activa o desactiva cada fase manualmente.</div><div id="fase-controls" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;"></div></div>`;
   document.getElementById("admin-content").innerHTML=html;
   setTimeout(()=>{
@@ -1441,6 +1454,30 @@ async function confirmarEliminar(username, btn){
   }else{
     btn.textContent='🗑️ Sí, eliminar todo'; btn.disabled=false;
     showToast(r.error||'Error al eliminar','error');
+  }
+}
+
+async function doRenameUser(btn){
+  const oldName=document.getElementById('rename-old').value.trim();
+  const newName=document.getElementById('rename-new').value.trim();
+  const msg=document.getElementById('rename-msg');
+  if(!oldName||!newName){msg.style.color='#E05252';msg.textContent='Ingresa ambos nombres';return;}
+  if(oldName.toLowerCase()===newName.toLowerCase()){msg.style.color='#E05252';msg.textContent='Los nombres son iguales';return;}
+  btn.textContent='⏳ Corrigiendo...'; btn.disabled=true;
+  const r=await api('renombrarUsuario',{oldName,newName});
+  btn.disabled=false;
+  if(r.ok){
+    btn.textContent='✅ Corregido'; btn.style.background='#1a3a4f'; btn.style.color='#fff';
+    msg.style.color='#1A7A4A';
+    msg.textContent=`✓ "${oldName}" → "${newName}" actualizado en ${r.totalUpdated} registro(s)`;
+    document.getElementById('rename-old').value='';
+    document.getElementById('rename-new').value='';
+    showToast('✅ Nombre corregido','success');
+    setTimeout(()=>{btn.textContent='Corregir';btn.style.background='';btn.style.color='';msg.textContent='';},4000);
+  }else{
+    btn.textContent='Corregir';
+    msg.style.color='#E05252';
+    msg.textContent=r.error||'Usuario no encontrado';
   }
 }
 
