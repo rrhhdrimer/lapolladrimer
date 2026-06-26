@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 
-  :root{--gold:#F5C842;--gold-dark:#C8860A;--green:#1A7A4A;--green-light:#25A865;--dark:#0A0E1A;--dark2:#131929;--dark3:#1C2438;--dark4:#2A3550;--text:#E6EDF3;--text2:#8B949E;--text3:#3D4B66;--red:#E05252;--radius:14px;}
+  :root{--gold:#F5C842;--gold-dark:#C8860A;--green:#1A7A4A;--green-exact:#157a3a;--green-light:#25A865;--dark:#0A0E1A;--dark2:#131929;--dark3:#1C2438;--dark4:#2A3550;--text:#E6EDF3;--text2:#8B949E;--text3:#3D4B66;--red:#E05252;--radius:14px;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:var(--dark);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;font-size:18px;}
 
@@ -124,7 +124,7 @@
   .save-match-btn:hover:not(:disabled){background:#e6b830;}
   .save-match-btn:disabled{background:#e0e8f0;color:#9ab0c4;cursor:not-allowed;border:1.5px dashed #9ab0c4;}
   .match-result-info{margin-top:12px;font-size:18px;color:#051C2C;text-align:center;padding:10px;background:rgba(5,28,44,0.08);border-radius:8px;}
-  .pts-exact{color:var(--green-light);font-weight:700;}
+  .pts-exact{color:var(--green-exact);font-weight:700;}
   .pts-correct{color:var(--green-light);font-weight:700;}
   .locked-overlay{font-size:17px;color:#1a3a4f;text-align:center;margin-top:10px;}
 
@@ -230,6 +230,18 @@
      ════════════════════════════════════════ */
 
   /* ── TABLET (601–960px) ── */
+  @media(max-width:1024px) and (min-width:601px){
+    .app-header{height:auto !important;min-height:60px;padding:8px 12px;flex-wrap:wrap;}
+    .app-header > div:nth-child(1){flex:0 0 auto;}
+    .app-header > div:nth-child(2){display:none !important;}
+    .app-header > div:nth-child(3){flex:0 0 auto;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+    .header-logo{height:40px !important;}
+    .admin-toggle-wrap{display:flex !important;}
+    .change-pin-btn{padding:6px 8px !important;font-size:14px !important;}
+    .logout-btn{padding:6px 10px !important;font-size:13px !important;}
+    .host-flags{display:none;}
+    .nav-tabs{top:60px !important;}
+  }
   @media(max-width:960px){
     .app-header > div:nth-child(2) div{font-size:12px !important;}
     .app-header > div:nth-child(2) img{height:50px !important;}
@@ -870,10 +882,13 @@ function ptsBadge(pron, res, fase){
   const s=SCORING[fase];
   const rL=parseInt(res.local),rV=parseInt(res.visita);
   const pL=parseInt(pron.local),pV=parseInt(pron.visita);
-  let pts=0;
-  if(pL===rL && pV===rV){ pts=s.exact; }
-  else{ const rG=rL>rV?'L':rV>rL?'V':'E', pG=pL>pV?'L':pV>pL?'V':'E'; if(rG===pG) pts=s.correct; }
-  if(pts>0) return `<div class="pts-badge pts-win">+${pts} pts</div>`;
+  let pts=0, tipo='wrong';
+  if(pL===rL && pV===rV){ pts=s.exact; tipo='exact'; }
+  else{ const rG=rL>rV?'L':rV>rL?'V':'E', pG=pL>pV?'L':pV>pL?'V':'E'; if(rG===pG){pts=s.correct;tipo='correct';} }
+  if(pts>0){
+    if(tipo==='exact') return `<div class="pts-badge pts-win" style="color:var(--green-exact);border-color:var(--green-exact);background:rgba(21,122,58,0.15)">+${pts} pts</div>`;
+    return `<div class="pts-badge pts-win">+${pts} pts</div>`;
+  }
   return `<div class="pts-badge pts-zero">+0 pts</div>`;
 }
 
