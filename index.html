@@ -1011,7 +1011,7 @@ function renderEliminatorias(){
       const pron=myPronosticos[p.id]||{},res=resultados[p.id],hasPron=pron.local!==undefined;
       if(elimTeams[p.id]?.local) p.local=elimTeams[p.id].local;
       if(elimTeams[p.id]?.visita) p.visita=elimTeams[p.id].visita;
-      const sinEq=!p.local||!p.visita,locked=!FASES_UNLOCK[fase]||sinEq;
+      const sinEq=!p.local||!p.visita,locked=!FASES_UNLOCK[fase]||sinEq||isLocked(p.fecha,p.hora);
       let si=null;
       if(res&&hasPron){const s=SCORING[fase],rL=parseInt(res.local),rV=parseInt(res.visita),pL=parseInt(pron.local),pV=parseInt(pron.visita);if(pL===rL&&pV===rV)si={pts:s.exact,tipo:"exact"};else{const rG=rL>rV?"L":rV>rL?"V":"E",pG=pL>pV?"L":pV>pL?"V":"E";si=rG===pG?{pts:s.correct,tipo:"correct"}:{pts:0,tipo:"wrong"};}}
       const matchLabel=(fase==="fin"&&p.id==="fin_001")?"Tercer Puesto":pNames[fase];
@@ -1027,7 +1027,7 @@ function renderEliminatorias(){
               <span class="score-sep">:</span>
               <input class="score-input" type="number" min="0" max="20" id="sv-${p.id}" value="${hasPron?pron.visita:""}" placeholder="-" ${locked?"disabled":""} oninput="onInput('${p.id}')">
             </div>
-            <div class="vs-label">${sinEq?"⏳ Equipos por definir":locked?"🔒 CERRADO":""}</div>
+            <div class="vs-label">${sinEq&&!isLocked(p.fecha,p.hora)?"⏳ Equipos por definir":locked?"🔒 CERRADO":""}</div>
           </div>
           <div class="team-side">${p.visita?flagImg(p.visita):"<div style='font-size:40px;text-align:center'>❓</div>"}<div class="team-name-txt">${p.visita||"Por definir"}</div></div>
         </div>
