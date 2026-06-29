@@ -604,8 +604,8 @@ const SCRIPT_URL    = "https://script.google.com/macros/s/AKfycbxE6EltVzBUdprzTi
 const CLIMA_SHEET_ID = "1IT_sRqzsuMteZ9rNdHGM95uH605CO2VlBPQd17hMQaw";
 const ADMIN_USERS   = ["christopher landauro"];
 
-let FASES_UNLOCK = JSON.parse(localStorage.getItem("pm26_fases") || '{"grupos":true,"r32":false,"r16":false,"qf":false,"sf":false,"fin":false}');
-const saveFases  = () => localStorage.setItem("pm26_fases", JSON.stringify(FASES_UNLOCK));
+let FASES_UNLOCK = {"grupos":true,"r32":false,"r16":false,"qf":false,"sf":false,"fin":false};
+const saveFases = async () => { await api("saveFases", {fases: FASES_UNLOCK}); };
 
 const FLAG_BASE  = "https://raw.githubusercontent.com/hampusborgos/country-flags/main/svg/";
 const FLAG_CODES = {"México":"mx","Sudáfrica":"za","Corea del Sur":"kr","Chequia":"cz","Canadá":"ca","Bosnia y Herzegovina":"ba","Catar":"qa","Suiza":"ch","Brasil":"br","Marruecos":"ma","Haití":"ht","Escocia":"gb-sct","Estados Unidos":"us","Paraguay":"py","Australia":"au","Turquía":"tr","Alemania":"de","Curazao":"cw","Costa de Marfil":"ci","Ecuador":"ec","Países Bajos":"nl","Japón":"jp","Suecia":"se","Túnez":"tn","España":"es","Cabo Verde":"cv","Bélgica":"be","Egipto":"eg","Arabia Saudita":"sa","Uruguay":"uy","Irán":"ir","Nueva Zelanda":"nz","Francia":"fr","Senegal":"sn","Irak":"iq","Noruega":"no","Argentina":"ar","Argelia":"dz","Austria":"at","Jordania":"jo","Portugal":"pt","RD Congo":"cd","Uzbekistán":"uz","Colombia":"co","Inglaterra":"gb-eng","Croacia":"hr","Ghana":"gh","Panamá":"pa"};
@@ -725,6 +725,8 @@ function apiLocal(action,body){
   if(action==="eliminarUsuario")return{ok:false,error:"⚠️ Sin conexión al servidor."};
   if(action==="recalcularLeaderboard")return{ok:false,error:"⚠️ Sin conexión al servidor."};
   if(action==="renombrarUsuario")return{ok:false,error:"⚠️ Sin conexión al servidor."};
+  if(action==="getFases")return{ok:true,data:{"grupos":true,"r32":false,"r16":false,"qf":false,"sf":false,"fin":false}};
+  if(action==="saveFases")return{ok:false,error:"⚠️ Sin conexión al servidor."};
   return{ok:false,error:"⚠️ Sin conexión al servidor. Verifica tu internet e intenta de nuevo."};
 }
 
@@ -818,13 +820,15 @@ async function loadElimTeams(){
 async function enterApp(name){
   await loadElimTeams();
   currentUser=name;isAdmin=false;
-  const[pR,eR,rR,mR]=await Promise.all([
+  const[pR,eR,rR,mR,fR]=await Promise.all([
     api("getPronosticos",{username:name}),
     api("getEspeciales",{username:name}),
     api("getResultados"),
-    api("getEspManualWinners",{username:name})
+    api("getEspManualWinners",{username:name}),
+    api("getFases",{})
   ]);
   myPronosticos=pR.data||{};myEspeciales=eR.data||{};resultados=rR.data||{};
+  if(fR.ok&&fR.data) Object.assign(FASES_UNLOCK, fR.data);
   // Merge manual esp winners into resultados
   if(mR.ok&&mR.data){Object.assign(resultados,mR.data);}
   document.getElementById("login-screen").style.display="none";
@@ -1535,8 +1539,10 @@ async function recalcularLeaderboard(btn){
   }
 }
 
-function toggleFase(key){
-  FASES_UNLOCK[key]=!FASES_UNLOCK[key];saveFases();renderAdmin();renderEliminatorias();
+async function toggleFase(key){
+  FASES_UNLOCK[key]=!FASES_UNLOCK[key];
+  await saveFases();
+  renderAdmin();renderEliminatorias();
   showToast(FASES_UNLOCK[key]?"✅ Fase desbloqueada":"🔒 Fase bloqueada","success");
 }
 
