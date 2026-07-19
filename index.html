@@ -1302,12 +1302,11 @@ async function loadEspAnswers(key){
 
   const e=ESPECIALES.find(x=>x.id===key);
   const pts=e.puntos;
-  const alreadySaved=resultados["esp_manual_"+key]||{};
+  const confirmedAnswers=r.confirmed||[];
 
   let html='<div style="display:flex;flex-direction:column;gap:8px;">';
   Object.entries(groups).sort().forEach(([answer,users])=>{
-    const savedUsers=alreadySaved[answer]||[];
-    const isConfirmed=savedUsers.length>0;
+    const isConfirmed=confirmedAnswers.some(a=>a.trim().toLowerCase()===answer.trim().toLowerCase());
     html+=`<div style="background:${isConfirmed?'rgba(37,168,101,0.1)':'rgba(5,28,44,0.05)'};border:1.5px solid ${isConfirmed?'#1A7A4A':'#b0c4d8'};border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
       <div>
         <div style="font-size:15px;font-weight:700;color:#051C2C">"${answer}" <span style="font-size:12px;color:#2a4a5a;font-weight:400">(${users.length} usuario${users.length>1?'s':''})</span></div>
